@@ -23,16 +23,13 @@ def get_data():
     db = get_db()
     if auth_key != "fdsrtw435s6af8dsd9sa":
         return "{ACCESS DENIED:Authentication Failed}"
-    if coin:
-        
+    if coin: 
         coin = coin.split(",")
-        print coin
         data = db.cryptodata.find({'name':coin[0]})
     else:
         data = db.cryptodata.find({})
     ret_data = []
     for hist_data in data:
-        #print hist_data 
         for dts in hist_data['data']:
             ret_data.append(dts)
     return json.dumps(ret_data)
