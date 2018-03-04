@@ -31,9 +31,9 @@ def insert_data(db, data):
     now = datetime.datetime.now()
     date_tod = now.strftime("%Y-%m-%d")
     for rec in data:
-        coin = rec['Symbol']
+        coin = rec['Name']
         print coin
-        continue
+        #continue
         res = db.cryptodata.find({"name" : coin})
         
         if res.count() > 0:
@@ -46,6 +46,8 @@ def insert_data(db, data):
             up_data['Volume (24h)'] = rec['Volume (24h)']
             up_data['% 24h'] = rec['% 24h']
             up_data['market_cap'] = rec['Market Cap']
+            up_data['% 1hr'] = rec['% 1h']
+            up_data['ciculating_supply'] = rec['Circulating Supply']
             print 'coin already exists.Updating'
             db.cryptodata.update({"name" : coin},{'$push':{'data': up_data}})
             
@@ -76,7 +78,7 @@ def insert_data(db, data):
 
             record['data'].append(details)
             print '-- ', json.dumps(record)
-            #db.cryptodata.insert(record)
+            db.cryptodata.insert(record)
 
             #print json.dumps(record)
         
