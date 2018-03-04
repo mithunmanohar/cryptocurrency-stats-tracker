@@ -1,6 +1,9 @@
 import json
+import requests
 from flask import Flask
 from flask import request
+from bs4 import BeautifulSoup
+import pandas as pd
 import pymongo
 from pymongo import MongoClient
 app = Flask(__name__)
@@ -33,6 +36,44 @@ def get_data():
         for dts in hist_data['data']:
             ret_data.append(dts)
     return json.dumps(ret_data)
+
+@app.route('/get_coin_list') 
+def get_coin_list(): 
+    db = get_db() 
+    data = db.cryptodata.find({}) 
+    coins = {}
+    a = []
+    for each in data: 
+        for cn in each['data']: 
+            #print cn
+            #return json.dumps(cn['org_name']) 
+            try: 
+                #coin_name = cn['org_name'] 
+                a.append({cn['org_name']: cn['ticker']})
+            except Exception as e: 
+                #print e
+                #return e
+                pass 
+    
+    coins["data"] = a
+    
+    return json.dumps(coins)
+
+@app.route('/get_coins')
+def get_coins():
+    url = "https://coinmarketcap.com/all/views/all/" 
+    html = requests.get(url).text 
+    soup = BeautifulSoup(html, 'lxml') # pass the html to lxml parser 
+    table = soup.find_all('table')[0] # find table from html 
+    df = pd.read_html(str(table)) 
+    k = (df[0].to_json(orient='records')) # 
+    data = json.loads(k) 
+    coin_list = []
+    for rec in data: 
+        coin_list.append({"coin":rec['Name'], "ticker":rec['Symbol']})
+
+    return json.dumps({"coins":coin_list})
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0",  debug=True)
